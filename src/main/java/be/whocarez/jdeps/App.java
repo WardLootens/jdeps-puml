@@ -33,9 +33,6 @@ public class App {
 		final List<String> output = new ArrayList<>();
 
 		output.add("@startuml");
-		includes.stream()
-				.map(jar -> String.format("package \"%s\"{}", jar))
-				.forEach(output::add);
 		dependencies.forEach(dep -> output.add(dep.toString()));
 		output.add("@enduml");
 

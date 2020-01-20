@@ -42,6 +42,6 @@ public class Dependency {
 
 	@Override
 	public String toString() {
-		return String.format("\"%s\" --> \"%s\"", from, to);
+		return String.format("[%s] --> [%s]", from, to);
 	}
 }

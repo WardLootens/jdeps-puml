@@ -21,6 +21,13 @@ public class Dependency {
 		return Optional.empty();
 	}
 
+	public static Dependency stripPath(Dependency dependency, String pathPrefix) {
+		return new Dependency(
+				dependency.from.replace(pathPrefix, ""),
+				dependency.to.replace(pathPrefix, "")
+		);
+	}
+
 	public String from() {
 		return from;
 	}

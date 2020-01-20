@@ -19,10 +19,12 @@ public class App {
 		final Path jdepsFile = Paths.get(args[0]);
 		final Path pumlFile = Paths.get(args[1]);
 		final List<String> includes = List.of(args[2].split(";"));
+		final String pathPrefixToIgnore = args[3];
 
 		final List<Dependency> dependencies = Files.lines(jdepsFile)
 				.map(Dependency::ofLine)
 				.flatMap(Optional::stream)
+				.map(dep -> Dependency.stripPath(dep, pathPrefixToIgnore))
 				.filter(dep -> includes.contains(dep.from()))
 				.filter(dep -> includes.contains(dep.to()))
 				.filter(not(Dependency::isSelfReference))

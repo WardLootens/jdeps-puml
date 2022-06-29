@@ -102,17 +102,17 @@ public class ClassDependency {
 		final Path pumlFile = Paths.get(args[1]);
 		final List<String> includes = args[2] == null || args[2].isBlank() ? List.of() : List.of(args[2].split(";"));
 		final String pathPrefixToIgnore = args[3];
+		final int packageDepth = Integer.parseInt(args[4]);
 
 		final List<ClassDependency> dependencies = Files.lines(jdepsFile)
 				.map(ClassDependency::ofLine)
 				.flatMap(Optional::stream)
-				.map(dep -> toPackageDependency(dep, 4))
+				.map(dep -> toPackageDependency(dep, packageDepth))
 				.map(dep -> stripPath(dep, pathPrefixToIgnore))
 				.distinct()
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.from()))
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.to()))
 				.filter(not(ClassDependency::isSelfReference))
-				.peek(System.out::println)
 				.collect(toList());
 
 		final List<String> output = new ArrayList<>();

@@ -3,8 +3,9 @@ package be.whocarez.jdeps;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.counting;
+import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.joining;
-import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -87,8 +89,8 @@ public class ClassDependency {
 		return Objects.hash(from, to, toJar);
 	}
 
-	public String toPuml() {
-		return String.format("[%s] --> [%s]", from, to);
+	public String toPuml(Long count) {
+		return String.format("[%s] --> [%s] : %s", from, to, count);
 	}
 
 	@Override
@@ -104,21 +106,20 @@ public class ClassDependency {
 		final String pathPrefixToIgnore = args[3];
 		final int packageDepth = Integer.parseInt(args[4]);
 
-		final List<ClassDependency> dependencies = Files.lines(jdepsFile)
+		final Map<ClassDependency, Long> dependencies = Files.lines(jdepsFile)
 				.map(ClassDependency::ofLine)
 				.flatMap(Optional::stream)
 				.map(dep -> toPackageDependency(dep, packageDepth))
 				.map(dep -> stripPath(dep, pathPrefixToIgnore))
-				.distinct()
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.from()))
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.to()))
 				.filter(not(ClassDependency::isSelfReference))
-				.collect(toList());
+				.collect(groupingBy(it -> it, counting()));
 
 		final List<String> output = new ArrayList<>();
 
 		output.add("@startuml");
-		dependencies.forEach(dep -> output.add(dep.toPuml()));
+		dependencies.forEach((dep, count) -> output.add(dep.toPuml(count)));
 		output.add("@enduml");
 
 		Files.write(pumlFile, output, UTF_8);

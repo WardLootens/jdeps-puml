@@ -1,6 +1,7 @@
 package be.whocarez.jdeps;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNullElse;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.counting;
@@ -13,6 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -114,7 +116,8 @@ public class ClassDependency {
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.from()))
 				.filter(dep -> includes.isEmpty() || includes.contains(dep.to()))
 				.filter(not(ClassDependency::isSelfReference))
-				.collect(groupingBy(it -> it, counting()));
+				.sorted(comparing(ClassDependency::from))
+				.collect(groupingBy(it -> it, LinkedHashMap::new, counting()));
 
 		final List<String> output = new ArrayList<>();
 
